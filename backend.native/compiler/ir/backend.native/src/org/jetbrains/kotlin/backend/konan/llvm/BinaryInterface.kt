@@ -163,7 +163,7 @@ private val IrFunction.signature: String
         // and
         // kotlinx.cinterop.ObjCClassOf<T>.create(string: kotlin.String): T defined in platform.Foundation in file Foundation.kt
 
-            val argName = if (this.hasObjCFactoryAnnotation || this.isObjCClassMethod()) "${it.name}:" else ""
+            val argName = if (this.hasObjCMethodAnnotation || this.hasObjCFactoryAnnotation || this.isObjCClassMethod()) "${it.name}:" else ""
             "$argName${typeToHashString(it.type)}${if (it.isVararg) "_VarArg" else ""}"
         }.joinToString(";")
         // Distinguish value types and references - it's needed for calling virtual methods through bridges.

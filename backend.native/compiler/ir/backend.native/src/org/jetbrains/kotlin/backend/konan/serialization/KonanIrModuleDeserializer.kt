@@ -266,7 +266,7 @@ class KonanIrModuleDeserializer(
         // All we need is just to declare forward declarations in the symbol table
         // In case you need a full fledged module, turn the forEach into a map and collect
         // produced files into an IrModuleFragment.
-        
+
         packageFragments.forEach { packageFragment ->
             val symbol = IrFileSymbolImpl(packageFragment)
             val file = IrFileImpl(NaiveSourceBasedFileEntryImpl("forward declarations pseudo-file"), symbol)

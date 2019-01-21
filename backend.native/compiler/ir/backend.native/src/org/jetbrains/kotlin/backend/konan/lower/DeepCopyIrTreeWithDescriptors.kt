@@ -78,7 +78,11 @@ internal class DeepCopyIrTreeWithSymbolsForInliner(val context: Context,
             }
 
             override fun visitField(declaration: IrField) {
-                (declaration.descriptor as WrappedFieldDescriptor).bind(declaration)
+                // TODO: inlining a function returning an object
+                // we get PropertyDescriptors from whithin that object here.
+                // That is a bug, most probably.
+                // We workaround the issue with question marks here.
+                (declaration.descriptor as? WrappedFieldDescriptor)?.bind(declaration)
                 declaration.acceptChildrenVoid(this)
             }
 
