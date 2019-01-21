@@ -328,7 +328,7 @@ internal class IrModuleSerializer(
     private fun serializeClassReference(expression: IrClassReference): KonanIr.IrClassReference {
         val proto = KonanIr.IrClassReference.newBuilder()
             .setClassSymbol(serializeIrSymbol(expression.symbol))
-            .setType(serializeIrType(expression.type))
+            .setClassType(serializeIrType(expression.classType))
         return proto.build()
     }
 
@@ -378,7 +378,6 @@ internal class IrModuleSerializer(
 
     private fun serializeGetEnumValue(expression: IrGetEnumValue): KonanIr.IrGetEnumValue {
         val proto = KonanIr.IrGetEnumValue.newBuilder()
-            .setType(serializeIrType(expression.type))
             .setSymbol(serializeIrSymbol(expression.symbol))
         return proto.build()
     }
@@ -394,15 +393,12 @@ internal class IrModuleSerializer(
     private fun serializeGetField(expression: IrGetField): KonanIr.IrGetField {
         val proto = KonanIr.IrGetField.newBuilder()
             .setFieldAccess(serializeFieldAccessCommon(expression))
-            .setType(serializeIrType(expression.type))
         return proto.build()
     }
 
     private fun serializeGetValue(expression: IrGetValue): KonanIr.IrGetValue {
-        val type = (expression as IrGetValueImpl).type
         val proto = KonanIr.IrGetValue.newBuilder()
             .setSymbol(serializeIrSymbol(expression.symbol))
-            .setType(serializeIrType(type))
         return proto.build()
     }
 

@@ -194,7 +194,7 @@ message IrComposite {
 
 message IrClassReference {
     required IrSymbol class_symbol = 1;
-    required IrType type = 2;
+    required IrType class_type = 2;
 }
 
 message IrConst {
@@ -236,7 +236,6 @@ message IrGetClass {
 }
 
 message IrGetEnumValue {
-    required IrType type = 1;
     required IrSymbol symbol = 2;
 }
 
@@ -248,12 +247,10 @@ message FieldAccessCommon {
 
 message IrGetField {
     required FieldAccessCommon field_access = 1;
-    required IrType type = 2;
 }
 
 message IrGetValue {
     required IrSymbol symbol = 1;
-    required IrType type = 2;
 }
 
 message IrGetObject {

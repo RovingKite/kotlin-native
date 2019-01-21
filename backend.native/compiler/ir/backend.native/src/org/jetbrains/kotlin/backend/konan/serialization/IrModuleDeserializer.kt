@@ -238,7 +238,7 @@ abstract class IrModuleDeserializer(
         type: IrType
     ): IrClassReference {
         val symbol = deserializeIrSymbol(proto.classSymbol) as IrClassifierSymbol
-        val classType = deserializeIrType(proto.type)
+        val classType = deserializeIrType(proto.classType)
         /** TODO: [createClassifierSymbolForClassReference] is internal function */
         return IrClassReferenceImpl(start, end, type, symbol, classType)
     }
@@ -350,10 +350,9 @@ abstract class IrModuleDeserializer(
         return IrGetClassImpl(start, end, type, argument)
     }
 
-    private fun deserializeGetField(proto: KonanIr.IrGetField, start: Int, end: Int): IrGetField {
+    private fun deserializeGetField(proto: KonanIr.IrGetField, start: Int, end: Int, type: IrType): IrGetField {
         val access = proto.fieldAccess
         val symbol = deserializeIrSymbol(access.symbol) as IrFieldSymbol
-        val type = deserializeIrType(proto.type)
         val superQualifier = if (access.hasSuper()) {
             deserializeIrSymbol(access.symbol) as IrClassSymbol
         } else null
@@ -364,18 +363,14 @@ abstract class IrModuleDeserializer(
         return IrGetFieldImpl(start, end, symbol, type, receiver, null, superQualifier)
     }
 
-    private fun deserializeGetValue(proto: KonanIr.IrGetValue, start: Int, end: Int): IrGetValue {
+    private fun deserializeGetValue(proto: KonanIr.IrGetValue, start: Int, end: Int, type: IrType): IrGetValue {
         val symbol = deserializeIrSymbol(proto.symbol) as IrValueSymbol
-        val type = deserializeIrType(proto.type)
-
         // TODO: origin!
         return IrGetValueImpl(start, end, type, symbol, null)
     }
 
-    private fun deserializeGetEnumValue(proto: KonanIr.IrGetEnumValue, start: Int, end: Int): IrGetEnumValue {
-        val type = deserializeIrType(proto.type)
+    private fun deserializeGetEnumValue(proto: KonanIr.IrGetEnumValue, start: Int, end: Int, type: IrType): IrGetEnumValue {
         val symbol = deserializeIrSymbol(proto.symbol) as IrEnumEntrySymbol
-
         return IrGetEnumValueImpl(start, end, type, symbol)
     }
 
@@ -647,15 +642,15 @@ abstract class IrModuleDeserializer(
             FUNCTION_REFERENCE
             -> deserializeFunctionReference(proto.functionReference, start, end, type)
             GET_ENUM_VALUE
-            -> deserializeGetEnumValue(proto.getEnumValue, start, end)
+            -> deserializeGetEnumValue(proto.getEnumValue, start, end, type)
             GET_CLASS
             -> deserializeGetClass(proto.getClass, start, end, type)
             GET_FIELD
-            -> deserializeGetField(proto.getField, start, end)
+            -> deserializeGetField(proto.getField, start, end, type)
             GET_OBJECT
             -> deserializeGetObject(proto.getObject, start, end, type)
             GET_VALUE
-            -> deserializeGetValue(proto.getValue, start, end)
+            -> deserializeGetValue(proto.getValue, start, end, type)
             INSTANCE_INITIALIZER_CALL
             -> deserializeInstanceInitializerCall(proto.instanceInitializerCall, start, end)
             PROPERTY_REFERENCE
