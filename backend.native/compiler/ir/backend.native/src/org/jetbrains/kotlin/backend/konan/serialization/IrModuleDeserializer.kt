@@ -309,7 +309,7 @@ abstract class IrModuleDeserializer(
         type: IrType
     ): IrEnumConstructorCall {
         val symbol = deserializeIrSymbol(proto.symbol) as IrConstructorSymbol
-        return IrEnumConstructorCallImpl(
+        val call = IrEnumConstructorCallImpl(
             start,
             end,
             type,
@@ -317,6 +317,8 @@ abstract class IrModuleDeserializer(
             proto.memberAccess.typeArguments.typeArgumentList.size,
             proto.memberAccess.valueArgumentList.size
         )
+        deserializeMemberAccessCommon(call, proto.memberAccess)
+        return call
     }
 
 
