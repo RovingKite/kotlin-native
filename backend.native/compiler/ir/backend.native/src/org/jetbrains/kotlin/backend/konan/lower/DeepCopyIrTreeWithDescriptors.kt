@@ -81,7 +81,6 @@ internal class DeepCopyIrTreeWithSymbolsForInliner(val context: Context,
             override fun visitField(declaration: IrField) {
                 val descriptor = declaration.descriptor
                 when (descriptor) {
-                    is WrappedPropertyDescriptor -> descriptor.bind(declaration.correspondingProperty!!)
                     is WrappedFieldDescriptor -> descriptor.bind(declaration)
                 }
                 declaration.acceptChildrenVoid(this)
