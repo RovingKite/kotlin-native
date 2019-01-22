@@ -76,8 +76,8 @@ internal class IrModuleSerializer(
                 KonanIr.IrSymbolKind.VALUE_PARAMETER_SYMBOL
         is IrSimpleFunctionSymbol ->
             KonanIr.IrSymbolKind.FUNCTION_SYMBOL
-        is IrReturnTargetSymbol ->
-            KonanIr.IrSymbolKind.RETURN_TARGET_SYMBOL
+        is IrReturnableBlockSymbol ->
+            KonanIr.IrSymbolKind.RETURNABLE_BLOCK_SYMBOL
         is IrFieldSymbol ->
             if (symbol.owner.correspondingProperty == null)
                 KonanIr.IrSymbolKind.STANDALONE_FIELD_SYMBOL
