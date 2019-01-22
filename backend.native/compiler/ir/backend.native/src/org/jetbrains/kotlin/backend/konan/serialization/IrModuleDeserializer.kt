@@ -961,17 +961,27 @@ abstract class IrModuleDeserializer(
     }
 
     private fun deserializeIrField(proto: KonanIr.IrField, start: Int, end: Int, origin: IrDeclarationOrigin): IrField {
+
         val symbol = deserializeIrSymbol(proto.symbol) as IrFieldSymbol
-        val field = IrFieldImpl(
-            start, end, origin,
-            symbol,
-            Name.identifier(proto.name),
-            deserializeIrType(proto.type),
-            deserializeVisibility(proto.visibility),
-            proto.isFinal,
-            proto.isExternal,
-            proto.isStatic
+        val type = deserializeIrType(proto.type)
+        val field = symbolTable.declareField(UNDEFINED_OFFSET,
+            UNDEFINED_OFFSET,
+            irrelevantOrigin,
+            symbol.descriptor,
+            type,
+            { IrFieldImpl(
+                    start, end, origin,
+                    it,
+                    Name.identifier(proto.name),
+                    type,
+                    deserializeVisibility(proto.visibility),
+                    proto.isFinal,
+                    proto.isExternal,
+                    proto.isStatic
+                )
+            }
         )
+
         val initializer = if (proto.hasInitializer()) deserializeExpression(proto.initializer) else null
         field.initializer = initializer?.let { IrExpressionBodyImpl(it) }
 
@@ -992,13 +1002,12 @@ abstract class IrModuleDeserializer(
         origin: IrDeclarationOrigin
     ): IrProperty {
 
-        // We start with the field to get its descriptor
         val backingField = if (proto.hasBackingField()) {
             deserializeIrField(proto.backingField, start, end, origin)
         } else null
 
-        val descriptor = backingField?.descriptor
-            ?: if (proto.hasDescriptor()) deserializeDescriptorReference(proto.descriptor) as PropertyDescriptor else null
+        val descriptor =
+            if (proto.hasDescriptor()) deserializeDescriptorReference(proto.descriptor) as PropertyDescriptor else null
                 ?: WrappedPropertyDescriptor()
 
         val property = IrPropertyImpl(
@@ -1015,7 +1024,7 @@ abstract class IrModuleDeserializer(
         )
 
         symbolTable.referenceProperty(descriptor, { property })
-
+/*
         backingField?.descriptor?.let {
             symbolTable.declareField(UNDEFINED_OFFSET,
                 UNDEFINED_OFFSET,
@@ -1024,7 +1033,7 @@ abstract class IrModuleDeserializer(
                 builtIns.unitType,
                 { symbol -> backingField })
         }
-
+*/
         property.backingField = backingField
         backingField?.let { it.correspondingProperty = property }
 
