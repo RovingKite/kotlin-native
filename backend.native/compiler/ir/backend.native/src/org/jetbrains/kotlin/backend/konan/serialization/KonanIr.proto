@@ -49,6 +49,7 @@ message IrModule {
     required string name = 1;
     repeated IrFile file = 2;
     required IrSymbolTable symbol_table = 3;
+    required IrTypeTable type_table = 4;
 }
 
 /* ------ IrSymbols --------------------------------------------- */
@@ -98,7 +99,7 @@ message Annotations {
 }
 
 message TypeArguments {
-    repeated IrType type_argument = 1;
+    repeated IrTypeIndex type_argument = 1;
 }
 
 message IrStarProjection {
@@ -107,7 +108,7 @@ message IrStarProjection {
 
 message IrTypeProjection {
     required IrTypeVariance variance = 1;
-    required IrType type = 2;
+    required IrTypeIndex type = 2;
 }
 
 message IrTypeArgument {
@@ -138,6 +139,14 @@ message IrType {
         IrDynamicType dynamic = 2;
         IrErrorType error = 3;
     }
+}
+
+message IrTypeTable {
+    repeated IrType types = 1;
+}
+
+message IrTypeIndex {
+    required int32 index = 1;
 }
 
 /* ------ IrExpressions --------------------------------------------- */
@@ -194,7 +203,7 @@ message IrComposite {
 
 message IrClassReference {
     required IrSymbol class_symbol = 1;
-    required IrType class_type = 2;
+    required IrTypeIndex class_type = 2;
 }
 
 message IrConst {
@@ -304,12 +313,12 @@ message IrTry {
 
 message IrTypeOp {
     required IrTypeOperator operator = 1;
-    required IrType operand = 2;
+    required IrTypeIndex operand = 2;
     required IrExpression argument = 3;
 }
 
 message IrVararg {
-    required IrType element_type = 1;
+    required IrTypeIndex element_type = 1;
     repeated IrVarargElement element = 2;
 }
 
@@ -378,7 +387,7 @@ enum IrTypeOperator {
 
 message IrExpression {
     required IrOperation operation = 1;
-    required IrType type = 2;
+    required IrTypeIndex type = 2;
     required Coordinates coordinates = 3;
 }
 
@@ -413,7 +422,7 @@ message IrFunctionBase {
     optional IrDeclaration extension_receiver = 7;
     repeated IrDeclaration value_parameter = 8;
     optional IrStatement body = 9;
-    required IrType return_type = 10;
+    required IrTypeIndex return_type = 10;
 }
 
 message IrConstructor {
@@ -431,7 +440,7 @@ message IrField {
     required bool is_final = 5;
     required bool is_external = 6;
     required bool is_static = 7;
-    required IrType type = 8;
+    required IrTypeIndex type = 8;
 }
 
 message IrProperty {
@@ -452,7 +461,7 @@ message IrProperty {
 message IrVariable {
     required string name = 1;
     required IrSymbol symbol = 2;
-    required IrType type = 3;
+    required IrTypeIndex type = 3;
     required bool is_var = 4;
     required bool is_const = 5;
     required bool is_lateinit = 6;
@@ -479,8 +488,8 @@ message IrValueParameter {
     required IrSymbol symbol = 1;
     required string name = 2;
     required int32 index = 3;
-    required IrType type = 4;
-    optional IrType vararg_element_type = 5;
+    required IrTypeIndex type = 4;
+    optional IrTypeIndex vararg_element_type = 5;
     required bool is_crossinline = 6;
     required bool is_noinline = 7;
     optional IrExpression default_value = 8;
@@ -491,7 +500,7 @@ message IrTypeParameter {
     required string name = 2;
     required int32 index = 3;
     required IrTypeVariance variance = 4;
-    repeated IrType super_type = 5;
+    repeated IrTypeIndex super_type = 5;
     required bool is_reified = 6;
 }
 
@@ -514,7 +523,7 @@ message IrClass {
     optional IrDeclaration this_receiver = 11;
     required IrTypeParameterContainer type_parameters = 12;
     required IrDeclarationContainer declaration_container = 13;
-    repeated IrType super_type = 14;
+    repeated IrTypeIndex super_type = 14;
 }
 
 message IrEnumEntry {

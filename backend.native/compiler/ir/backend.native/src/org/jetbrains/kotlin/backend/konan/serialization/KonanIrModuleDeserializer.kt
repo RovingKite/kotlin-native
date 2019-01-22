@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.ir.declarations.impl.*
 import org.jetbrains.kotlin.ir.descriptors.IrBuiltIns
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.symbols.impl.*
+import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.ir.util.patchDeclarationParents
 import org.jetbrains.kotlin.metadata.KonanIr
@@ -55,9 +56,10 @@ class KonanIrModuleDeserializer(
 
     var deserializedModuleDescriptor: ModuleDescriptor? = null
     var deserializedModuleProtoSymbolTables = mutableMapOf<ModuleDescriptor, KonanIr.IrSymbolTable>()
+    var deserializedModuleProtoTypeTables = mutableMapOf<ModuleDescriptor, KonanIr.IrTypeTable>()
+
     val resolvedForwardDeclarations = mutableMapOf<UniqIdKey, UniqIdKey>()
     val descriptorReferenceDeserializer = DescriptorReferenceDeserializer(currentModule, resolvedForwardDeclarations)
-
 
     init {
         var currentIndex = 0L
@@ -129,6 +131,12 @@ class KonanIrModuleDeserializer(
         val symbolData =
             deserializedModuleProtoSymbolTables[deserializedModuleDescriptor]!!.getSymbols(proto.index)
         return deserializeIrSymbolData(symbolData)
+    }
+
+    override fun deserializeIrType(proto: KonanIr.IrTypeIndex): IrType {
+        val typeData =
+            deserializedModuleProtoTypeTables[deserializedModuleDescriptor]!!.getTypes(proto.index)
+        return deserializeIrTypeData(typeData)
     }
 
     fun deserializeIrSymbolData(proto: KonanIr.IrSymbolData): IrSymbol {
@@ -314,6 +322,7 @@ class KonanIrModuleDeserializer(
 
         deserializedModuleDescriptor = moduleDescriptor
         deserializedModuleProtoSymbolTables.put(moduleDescriptor, proto.symbolTable)
+        deserializedModuleProtoTypeTables.put(moduleDescriptor, proto.typeTable)
 
         val files = proto.fileList.map {
             deserializeIrFile(it, moduleDescriptor, deserializeAllDeclarations)

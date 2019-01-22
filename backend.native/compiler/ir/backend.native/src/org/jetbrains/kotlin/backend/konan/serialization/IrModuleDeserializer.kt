@@ -60,6 +60,7 @@ abstract class IrModuleDeserializer(
 ) : IrDeserializer {
 
     abstract fun deserializeIrSymbol(proto: KonanIr.IrSymbol): IrSymbol
+    abstract fun deserializeIrType(proto: KonanIr.IrTypeIndex): IrType
     abstract fun deserializeDescriptorReference(proto: KonanIr.DescriptorReference): DeclarationDescriptor
 
     private fun deserializeTypeArguments(proto: KonanIr.TypeArguments): List<IrType> {
@@ -122,7 +123,7 @@ abstract class IrModuleDeserializer(
         return IrErrorTypeImpl(null, annotations, Variance.INVARIANT)
     }
 
-    fun deserializeIrType(proto: KonanIr.IrType): IrType {
+    fun deserializeIrTypeData(proto: KonanIr.IrType): IrType {
         return when (proto.kindCase) {
             SIMPLE -> deserializeSimpleType(proto.simple)
             DYNAMIC -> deserializeDynamicType(proto.dynamic)

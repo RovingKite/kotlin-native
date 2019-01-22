@@ -37,7 +37,10 @@ import org.jetbrains.kotlin.ir.expressions.impl.IrNullaryPrimitiveImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrUnaryPrimitiveImpl
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.types.*
+import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
 import org.jetbrains.kotlin.metadata.KonanIr
+import org.jetbrains.kotlin.types.SimpleType
+import org.jetbrains.kotlin.types.StarProjectionImpl
 import org.jetbrains.kotlin.types.Variance
 
 internal class IrModuleSerializer(
@@ -53,6 +56,11 @@ internal class IrModuleSerializer(
     // so use this index to store symbol data only once.
     val protoSymbolMap = mutableMapOf<IrSymbol, Int>()
     val protoSymbolArray = arrayListOf<KonanIr.IrSymbolData>()
+
+    // The same type can be used multiple times in a module
+    // so use this index to store type data only once.
+    val protoTypeMap = mutableMapOf<IrTypeKey, Int>()
+    val protoTypeArray = arrayListOf<KonanIr.IrType>()
 
     /* ------- IrSymbols -------------------------------------------------------- */
 
@@ -181,7 +189,7 @@ internal class IrModuleSerializer(
         .setAnnotations(serializeAnnotations(type.annotations))
         .build()
 
-    private fun serializeIrType(type: IrType): KonanIr.IrType {
+    private fun serializeIrTypeData(type: IrType): KonanIr.IrType {
         logger.log { "### serializing IrType: " + type }
         val proto = KonanIr.IrType.newBuilder()
         when (type) {
@@ -192,6 +200,67 @@ internal class IrModuleSerializer(
             is IrErrorType ->
                 proto.error = serializeErrorType(type)
             else -> TODO("IrType serialization not implemented yet: $type.")
+        }
+        return proto.build()
+    }
+
+    enum class IrTypeKind {
+        SIMPLE,
+        DYNAMIC,
+        ERROR
+    }
+
+    enum class IrTypeArgumentKind {
+        STAR,
+        PROJECTION
+    }
+
+    // This is just IrType repacked as a data class, good to address a hash map.
+    data class IrTypeKey (
+        val kind: IrTypeKind,
+        val classifier: IrClassifierSymbol?,
+        val hasQuestionMark: Boolean?,
+        val arguments: List<IrTypeArgumentKey>?,
+        val annotations: List<IrCall>
+    )
+
+    data class IrTypeArgumentKey (
+        val kind: IrTypeArgumentKind,
+        val variance: Variance?,
+        val type: IrTypeKey?
+    )
+
+    val IrType.toIrTypeKey: IrTypeKey get() = IrTypeKey(
+        kind = when (this) {
+            is IrSimpleType -> IrTypeKind.SIMPLE
+            is IrDynamicType -> IrTypeKind.DYNAMIC
+            is IrErrorType -> IrTypeKind.ERROR
+            else -> error("Unexpected IrType kind: $this")
+        },
+        classifier = this.classifierOrNull,
+        hasQuestionMark = (this as? IrSimpleType)?.hasQuestionMark,
+        arguments = (this as? IrSimpleType)?.arguments?.map { it.toIrTypeArgumentKey },
+        annotations = this.annotations
+    )
+
+    val IrTypeArgument.toIrTypeArgumentKey: IrTypeArgumentKey get() = IrTypeArgumentKey(
+        kind = when (this) {
+            is IrStarProjection -> IrTypeArgumentKind.STAR
+            is IrTypeProjection -> IrTypeArgumentKind.PROJECTION
+            else -> error("Unexpected type argument kind: $this")
+        },
+        variance = (this as? IrTypeProjection)?.variance,
+        type = (this as? IrTypeProjection)?.type?.toIrTypeKey
+    )
+
+    fun serializeIrType(type: IrType): KonanIr.IrTypeIndex {
+        val proto = KonanIr.IrTypeIndex.newBuilder()
+        val key = type.toIrTypeKey
+        proto.index = protoTypeMap.getOrPut(key) {
+            // println("new type: $type ${(type as? IrSimpleType)?.classifier?.descriptor}${if((type as? IrSimpleType)?.hasQuestionMark ?: false) "?" else ""}")
+            // println("new key = $key")
+            protoTypeArray.add(serializeIrTypeData(type))
+            protoTypeArray.size - 1
         }
         return proto.build()
     }
@@ -989,6 +1058,11 @@ internal class IrModuleSerializer(
         proto.symbolTable = KonanIr.IrSymbolTable.newBuilder()
             .addAllSymbols(protoSymbolArray)
             .build()
+
+        proto.typeTable = KonanIr.IrTypeTable.newBuilder()
+            .addAllTypes(protoTypeArray)
+            .build()
+
         return proto.build()
     }
 
