@@ -408,8 +408,7 @@ message IrFunction {
     required bool is_tailrec = 4;
     required bool is_suspend = 5;
     repeated IrSymbol overridden = 6;
-    optional UniqId corresponding_property = 7;
-
+    //optional UniqId corresponding_property = 7;
 }
 
 message IrFunctionBase {

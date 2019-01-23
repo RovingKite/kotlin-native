@@ -835,10 +835,10 @@ internal class IrModuleSerializer(
             proto.addOverridden(serializeIrSymbol(it))
         }
 
-        function.correspondingProperty?.let {
-            val uniqId = declarationTable.uniqIdByDeclaration(it)
-            proto.setCorrespondingProperty(protoUniqId(uniqId))
-        }
+        //function.correspondingProperty?.let {
+        //    val uniqId = declarationTable.uniqIdByDeclaration(it)
+        //    proto.setCorrespondingProperty(protoUniqId(uniqId))
+        //}
 
         val base = serializeIrFunctionBase(function as IrFunctionBase)
         proto.setBase(base)
